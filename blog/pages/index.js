@@ -9,11 +9,32 @@ import Author from '../components/Author'
 import Advert from '../components/Advert'
 import Footer from '../components/Footer'
 import axios from 'axios'
+import servicePath from '../config/apiUrl'
+import marked from 'marked'
+import hljs from "highlight.js";
+import 'highlight.js/styles/monokai-sublime.css';
+
 
 
 const Home = (list) => {        //Blog 首页
 
   const [mylist, setMylist] = useState(list.data)
+
+  const renderer = new marked.Renderer()
+
+  marked.setOptions({
+    renderer: renderer ,
+    gfm: true,
+    pedantic: false,
+    sanitize: false,
+    tables: true,
+    breaks: false,
+    smartLists: true,
+    smartypants: false,
+    highlight: function (code) {
+      return hljs.highlight(code).value;
+    }
+  }); 
 
   return (
       <div>
@@ -40,7 +61,9 @@ const Home = (list) => {        //Blog 首页
               <span><FolderOutlined />{item.typeName}</span>
               <span><FireOutlined />{item.view_count}人</span>
                   </div>
-                  <div className="list-context">{item.introuduce}</div>
+                  <div className="list-context"
+                    dangerouslySetInnerHTML={{__html:marked(item.introduce)}}
+                  ></div>
                 </List.Item>
               )
               
@@ -59,12 +82,11 @@ const Home = (list) => {        //Blog 首页
   )
 }
 
-Home.getInitialProps = async () =>{
-
+Home.getInitialProps = async ()=>{
   const promise = new Promise((resolve)=>{
-    axios('http://127.0.0.1:7002/default/getArticleList').then(
+    axios(servicePath.getArticleList).then(
       (res)=>{
-        console.log('---->',res.data)
+        //console.log('远程获取数据结果:',res.data.data)
         resolve(res.data)
       }
     )
